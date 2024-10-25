@@ -34,7 +34,7 @@ def main():
             continue
 
         for file in files:
-            if file.endswith(".py"):
+            if file.endswith(".py") and "test" not in file:
                 script_path = os.path.join(root, file)
                 script_name = os.path.splitext(file)[0]
 
