@@ -17,9 +17,6 @@ It provides a safer alternative to rm, giving users the ability to recover mista
 ## Installation
 
 1. Clone or download this script to your local machine.
-   ```bash
-   wget https://raw.githubusercontent.com/fenglielie/scripts/refs/heads/main/rm2trash/rm2trash.py -O rm2trash
-   ```
 2. Ensure the script has executable permissions.
    ```bash
    chmod +x rm2trash
