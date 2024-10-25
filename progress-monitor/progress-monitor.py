@@ -646,7 +646,7 @@ class ProgressMonitorApp:
         self.speed = None
 
     def show_help(self):
-        url = "https://github.com/fenglielie/progress_monitor"
+        url = "https://github.com/fenglielie/toolbox"
         webbrowser.open(url)
 
     def show_about(self):
