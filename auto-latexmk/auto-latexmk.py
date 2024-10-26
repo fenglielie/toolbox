@@ -40,6 +40,7 @@ def compile_tex_file(tex_file, subdir, default_engine):
 
     aux_dir = os.path.abspath(os.path.join(subdir, '.aux'))
     out_dir = os.path.abspath(subdir)
+    tex_file = os.path.abspath(os.path.join(subdir,tex_file))
 
     # 构造latexmk命令参数
     latex_command = [
@@ -50,10 +51,11 @@ def compile_tex_file(tex_file, subdir, default_engine):
         f"-{engine}",
         f"-auxdir={aux_dir}",
         f"-outdir={out_dir}",
-        tex_file_path
+        tex_file
     ]
 
     logging.info(f"Compiling {tex_file} with {engine} in {subdir}")
+    logging.debug(f"latexmk command: {' '.join(latex_command)}")
 
     start_time = time.time()
     try:
