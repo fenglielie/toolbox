@@ -7,7 +7,7 @@ import argparse
 import shutil
 import time
 
-SKIP_DIRS = ["chapters", "chapter", ".git", ".aux"]
+SKIP_DIRS = [".git", ".aux"]
 
 success_count = 0
 failure_count = 0
@@ -35,18 +35,30 @@ def compile_tex_file(tex_file, subdir, default_engine):
     tex_file_path = os.path.join(subdir, tex_file)
 
     engine = get_tex_engine(tex_file_path, default_engine)
-
     if engine == "pdflatex":
-        latex_command = "-pdf"
-    else:
-        latex_command = f"-{engine}"
+        engine = "pdf"
+
+    aux_dir = os.path.abspath(os.path.join(subdir, '.aux'))
+    out_dir = os.path.abspath(subdir)
+
+    # 构造latexmk命令参数
+    latex_command = [
+        "-file-line-error",
+        "-halt-on-error",
+        "-interaction=nonstopmode",
+        "-synctex=1",
+        f"-{engine}",
+        f"-auxdir={aux_dir}",
+        f"-outdir={out_dir}",
+        tex_file_path
+    ]
 
     logging.info(f"Compiling {tex_file} with {engine} in {subdir}")
 
     start_time = time.time()
     try:
         result = subprocess.run(
-            ["latexmk", latex_command, tex_file],
+            ["latexmk"] + latex_command,
             cwd=subdir,
             capture_output=True,
             timeout=120,
@@ -57,10 +69,10 @@ def compile_tex_file(tex_file, subdir, default_engine):
 
         if result.returncode == 0:
             logging.info(f"Successfully compiled {tex_file} in {subdir}")
-            show_success(subdir, tex_file, latex_command, elapsed_time)
+            show_success(subdir, tex_file, engine, elapsed_time)
         else:
             logging.error(f"Failed to compile {tex_file} in {subdir}")
-            show_failure(subdir, tex_file, latex_command, elapsed_time)
+            show_failure(subdir, tex_file, engine, elapsed_time)
             logging.debug(result.stderr.decode("utf-8"))
 
     except subprocess.TimeoutExpired:
@@ -68,13 +80,13 @@ def compile_tex_file(tex_file, subdir, default_engine):
         elapsed_time = end_time - start_time
 
         logging.error(f"Compilation of {tex_file} in {subdir} timed out.")
-        show_failure(subdir, tex_file, latex_command, elapsed_time)
+        show_failure(subdir, tex_file, engine, elapsed_time)
     except Exception as e:
         end_time = time.time()
         elapsed_time = end_time - start_time
 
         logging.error(f"Error during compilation of {tex_file} in {subdir}: {e}")
-        show_failure(subdir, tex_file, latex_command, elapsed_time)
+        show_failure(subdir, tex_file, engine, elapsed_time)
 
 
 def is_main_tex_file(tex_file_path):
@@ -94,7 +106,7 @@ def get_tex_engine(tex_file_path, default_engine):
         # check shebang
         with open(tex_file_path, "r", encoding="utf-8") as f:
             first_line = f.readline().strip()
-            if first_line.startswith("#!"):
+            if first_line.startswith("% !TEX"):
                 logging.debug(f"Found shebang in {tex_file_path}")
                 if "xelatex" in first_line:
                     return "xelatex"

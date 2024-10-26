@@ -54,7 +54,7 @@ python auto-latexmk.py <root_dir> [--mode <mode>] [--log-level <level>] [--engin
 
 ## 实现原理
 
-1. **编译引擎选择**：根据 `.tex` 文件首行的 shebang（如 `#!/usr/bin/env xelatex`）或文件内容（检测头部是否存在 `ctex` ）自动选择编译引擎，否则使用默认的编译引擎。
+1. **编译引擎选择**：根据 `.tex` 文件首行的 shebang（例如`% !TEX program = xelatex`）或文件内容（检测头部是否存在 `ctex` ）自动选择编译引擎，否则使用默认的编译引擎。
 2. **文件检测**：递归遍历文件夹，编译包含 `\documentclass` 的 `.tex` 文件。
 3. **编译过程**：使用 `latexmk` 命令编译 `.tex` 文件，超时时间为 120 秒。
 4. **结果统计**：记录成功和失败的文件数，并在控制台输出。
