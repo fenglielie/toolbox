@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import multiprocessing
 import os
 import subprocess
 import logging
@@ -335,4 +336,5 @@ def main():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     main()
