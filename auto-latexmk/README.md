@@ -13,7 +13,7 @@
 ### 基本用法
 
 ```bash
-python auto-latexmk.py <root_dir> [--mode <mode>] [--log-level <level>] [--engine <engine>]
+python auto-latexmk.py [-h] [--mode {clean,compile,both}] [--verbose] [--engine {xelatex,pdflatex,lualatex}] root_dir
 ```
 
 ### 参数说明
@@ -21,9 +21,9 @@ python auto-latexmk.py <root_dir> [--mode <mode>] [--log-level <level>] [--engin
 - `root_dir`：需要查找 `.tex` 文件的根目录。
 - `--mode`：操作模式，默认为 `compile`。
   - `clean`：清理 `.aux` 文件夹。
-  - `compile`：编译 `.tex` 文件。
+  - `compile`：编译主 `.tex` 文件。
   - `both`：同时执行清理和编译操作。
-- `--log-level`：日志级别，可选值为 `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`，默认 `WARNING`。
+- `--verbose`：是否启用详细的信息输出，默认为 `False`。
 - `--engine`：默认编译引擎，支持 `xelatex`, `pdflatex`, `lualatex`，默认 `xelatex`。
 
 ### 示例
@@ -40,10 +40,10 @@ python auto-latexmk.py <root_dir> [--mode <mode>] [--log-level <level>] [--engin
    python auto-latexmk.py /path/to/directory --mode clean
    ```
 
-3. **先清理 `.aux` 文件夹再编译 `.tex` 文件，日志级别设置为 DEBUG**：
+3. **先清理 `.aux` 文件夹再编译 `.tex` 文件，开启详细输出**：
 
    ```bash
-   python auto-latexmk.py /path/to/directory --mode both --log-level DEBUG
+   python auto-latexmk.py /path/to/directory --mode both --verbose
    ```
 
 4. **指定默认编译引擎为 `pdflatex`**：
