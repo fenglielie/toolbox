@@ -8,7 +8,7 @@ import argparse
 import shutil
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
-
+import json
 
 LOG_COLORS = {
     "DEBUG": "\033[34m",  # blue
@@ -34,7 +34,6 @@ def clean_aux_directory(root_dir):
         if os.path.exists(aux_dir_path) and os.path.isdir(aux_dir_path):
             try:
                 shutil.rmtree(aux_dir_path)
-                logging.debug(f"Deleted: {aux_dir_path}")
             except Exception as e:
                 logging.error(f"Failed to delete {aux_dir_path}: {e}")
 
@@ -46,7 +45,7 @@ def run_compile_task(task):
     engine = task["engine"]
 
     # 临时目录和输出目录
-    out_dir = subdir
+    out_dir = os.path.abspath(subdir).replace("\\", "/")
     aux_dir = os.path.abspath(os.path.join(subdir, ".aux")).replace("\\", "/")
 
     # 构造latexmk命令参数
@@ -82,6 +81,7 @@ def run_compile_task(task):
                 {
                     "success": True,
                     "elapsed_time": time.time() - start_time,
+                    "full_command": latex_full_command,
                 }
             )
 
@@ -173,13 +173,12 @@ def generate_compile_tasks(root_dir, default_engine):
                 first_line = f.readline().strip()
                 if first_line.startswith("% !TEX"):
                     first_line = first_line.strip()
-                    logging.debug(f"Found shebang in {tex_file_path}: {first_line}")
                     if "xelatex" in first_line:
-                        return "xelatex"
+                        return ("xelatex", first_line)
                     elif "pdflatex" in first_line:
-                        return "pdflatex"
+                        return ("pdflatex", first_line)
                     elif "lualatex" in first_line:
-                        return "lualatex"
+                        return ("lualatex", first_line)
 
             # use xelatex if found ctex before \begin{document}
             with open(tex_file_path, "r", encoding="utf-8") as f:
@@ -188,14 +187,13 @@ def generate_compile_tasks(root_dir, default_engine):
                     if r"\begin{document}" in line:
                         break
                     if "ctex" in line:
-                        logging.debug(f"Found 'ctex' in {tex_file_path}: {line}")
-                        return "xelatex"
+                        return ("xelatex", line)
 
         except Exception as e:
             logging.error(f"Error reading {tex_file_path}: {e}")
-            return default_engine
+            return (default_engine, None)
 
-        return default_engine
+        return (default_engine, None)
 
     tasks = []
     SKIP_DIRS = [".git", ".aux"]
@@ -211,7 +209,7 @@ def generate_compile_tasks(root_dir, default_engine):
             )
             if is_main_tex_file(tex_file):
                 # 获取对应的编译引擎
-                engine = get_tex_engine(tex_file, default_engine)
+                engine, append_info = get_tex_engine(tex_file, default_engine)
                 if engine == "pdflatex":
                     engine = "pdf"
 
@@ -219,11 +217,11 @@ def generate_compile_tasks(root_dir, default_engine):
                 tasks.append(
                     {
                         "tex_file": tex_file,
-                        "subdir": subdir,
+                        "subdir": subdir.replace("\\", "/"),
                         "engine": engine,
+                        "append_info": append_info,
                     }
                 )
-
     return tasks
 
 
@@ -273,6 +271,22 @@ def show_compile_results(tasks_results):
             )
             print(f"\033[35mfull_command:\n{task_result['full_command']}\033[0m")
             print(f"\033[35merror_msg:\n{task_result['error_msg']}\033[0m")
+
+
+def output_to_logfile(tasks_results):
+    """
+    将编译结果输出到日志文件，每个任务以 JSON 格式保存。
+    """
+
+    try:
+        with open("auto-latexmk.log", "w", encoding="utf-8") as f:
+            for task_result in tasks_results:
+                # 将字典格式化为 JSON 并写入文件
+                json.dump(task_result, f, ensure_ascii=False, indent=4)
+                f.write("\n")
+        logging.debug("Compilation results successfully written to auto-latexmk.log")
+    except Exception as e:
+        logging.error(f"Error writing to log file: {e}")
 
 
 def parse_args():
@@ -333,6 +347,9 @@ def main():
         tasks_results = run_compile_tasks(tasks)
         # 展示编译结果
         show_compile_results(tasks_results)
+
+        if args.verbose:
+            output_to_logfile(tasks_results)
 
 
 if __name__ == "__main__":
