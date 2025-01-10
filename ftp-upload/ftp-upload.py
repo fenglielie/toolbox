@@ -31,23 +31,11 @@ def create_directory(ftp, remote_dir):
     return True
 
 
-def upload_file(ftp_host, ftp_user, ftp_pass, ftp_encoding, local_file, remote_dir):
+def upload_file(ftp, local_file, remote_dir):
     """
-    上传文件到指定FTP服务器目录
+    上传单个文件
     """
-    # 路径合法性处理：要求路径使用Linux分隔符，并且必须是以/开头的绝对路径（ftp用户可访问的根目录）
-    remote_dir = remote_dir.replace("\\", "/")
-    if not remote_dir.startswith("/"):
-        raise ValueError(
-            f"Invalid remote directory: {remote_dir}. It must start with '/'."
-        )
-
     try:
-        # 连接到FTP服务器
-        ftp = FTP(ftp_host, encoding=ftp_encoding)
-        ftp.login(user=ftp_user, passwd=ftp_pass)
-        logging.info(f"Successfully connected to {ftp_host}")
-
         # 确保目标目录存在
         if not create_directory(ftp, remote_dir):
             logging.error(f"Failed to create directory: {remote_dir}")
@@ -61,11 +49,58 @@ def upload_file(ftp_host, ftp_user, ftp_pass, ftp_encoding, local_file, remote_d
         with open(local_file, "rb") as file:
             ftp.storbinary(f"STOR {os.path.basename(local_file)}", file)
             logging.info(f"File '{local_file}' uploaded successfully to {remote_dir}")
+    except Exception as e:
+        logging.error(f"Error uploading file '{local_file}': {e}")
 
-        # 退出FTP
+
+def upload_directory(ftp, local_dir, remote_dir):
+    """
+    递归上传文件夹及其内容，跳过隐藏文件夹（以.开头的文件夹）
+    """
+    # 先在FTP上创建顶层文件夹
+    if not create_directory(ftp, remote_dir):
+        logging.error(f"Failed to create directory: {remote_dir}")
+        return
+
+    for root, dirs, files in os.walk(local_dir):
+        # 过滤掉隐藏文件夹（以.开头的文件夹）
+        dirs[:] = [d for d in dirs if not d.startswith(".")]  # 只保留非隐藏文件夹
+
+        # 计算相对路径并构建目标远程路径
+        relative_path = os.path.relpath(root, local_dir)
+        target_remote_dir = os.path.join(remote_dir, relative_path).replace("\\", "/")
+
+        # 上传文件
+        for file in files:
+            local_file_path = os.path.join(root, file)
+            upload_file(ftp, local_file_path, target_remote_dir)
+
+
+def upload(local_path, remote_dir, config):
+    """
+    上传文件或文件夹，判断上传对象类型
+    """
+    try:
+        # 连接到FTP服务器
+        ftp = FTP(config["ftp_host"], encoding=config["ftp_encoding"])
+        ftp.login(user=config["ftp_user"], passwd=config["ftp_pass"])
+        logging.info(f"Successfully connected to {config['ftp_host']}")
+
+        # 判断上传的是文件还是文件夹
+        if os.path.isdir(local_path):
+            logging.info(f"Uploading folder: {local_path}")
+            upload_directory(ftp, local_path, remote_dir)
+        elif os.path.isfile(local_path):
+            logging.info(f"Uploading file: {local_path}")
+            upload_file(ftp, local_path, remote_dir)
+        else:
+            logging.error(f"Invalid path: {local_path}")
+
         ftp.quit()
+
     except Exception as e:
         logging.error(f"Error: {e}")
+        sys.exit(1)
 
 
 def load_config(config_path):
@@ -81,14 +116,14 @@ def load_config(config_path):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="FTP File Upload Tool")
+    parser = argparse.ArgumentParser(description="FTP File/Folder Upload Tool")
     parser.add_argument(
         "-c",
         "--config",
         default="ftp-config.json",
         help="Configuration file path, default is ftp-config.json",
     )
-    parser.add_argument("file", help="Path to the local file to upload.")
+    parser.add_argument("path", help="Path to the local file or folder to upload.")
     parser.add_argument(
         "-d",
         "--destination",
@@ -120,26 +155,13 @@ def main():
             logging.error(f"Missing required key '{key}' in configuration file.")
             sys.exit(1)
 
-    # 执行文件上传
-    try:
-        upload_file(
-            ftp_host=config["ftp_host"],
-            ftp_user=config["ftp_user"],
-            ftp_pass=config["ftp_pass"],
-            ftp_encoding=config["ftp_encoding"],
-            local_file=args.file,
-            remote_dir=args.destination,
-        )
-    except ValueError as e:
-        logging.error(e)
-        sys.exit(1)
-    except Exception as e:
-        logging.error(f"Unexpected error: {e}")
-        sys.exit(1)
+    # 执行文件或文件夹上传
+    upload(args.path, args.destination, config)
 
 
 if __name__ == "__main__":
     main()
+
 
 """
 ftp-config.json
