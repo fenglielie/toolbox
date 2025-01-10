@@ -1,0 +1,6 @@
+{
+    "ftp_host": "ftp.example.com",
+    "ftp_user": "your_username",
+    "ftp_pass": "your_password",
+    "ftp_encoding": "gbk"
+}
