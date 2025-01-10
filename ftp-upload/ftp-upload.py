@@ -141,9 +141,14 @@ def main():
         ],
     )
 
+    # 使目录支持~
+    local_path = os.path.expanduser(args.path)
+    destination_path = os.path.expanduser(args.destination)
+    config_path = os.path.expanduser(args.config)
+
     # 加载配置
     try:
-        config = load_config(args.config)
+        config = load_config(config_path)
     except ValueError as e:
         logging.error(e)
         sys.exit(1)
@@ -156,7 +161,7 @@ def main():
             sys.exit(1)
 
     # 执行文件或文件夹上传
-    upload(args.path, args.destination, config)
+    upload(local_path, destination_path, config)
 
 
 if __name__ == "__main__":
