@@ -4,6 +4,7 @@ import os
 import subprocess
 import argparse
 
+
 def package_script(script_path, build_dir, output_dir):
     """使用 PyInstaller 打包脚本为单文件可执行文件"""
     command = [
@@ -20,13 +21,12 @@ def package_script(script_path, build_dir, output_dir):
     ]
     subprocess.run(command, check=True)
 
+
 def main():
     # 解析命令行参数
     parser = argparse.ArgumentParser(description="打包Python脚本为可执行文件")
     parser.add_argument(
-        "script_names",
-        nargs='*',
-        help="可选，指定要打包的脚本名称（不包含扩展名）"
+        "script_names", nargs="*", help="可选，指定要打包的脚本名称（不包含扩展名）"
     )
     args = parser.parse_args()
 
@@ -58,6 +58,7 @@ def main():
                 package_script(script_path, build_dir, output_dir)
 
     print("All scripts packaged successfully.")
+
 
 if __name__ == "__main__":
     main()
