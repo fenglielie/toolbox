@@ -9,4 +9,5 @@
 - progress-monitor
 - rm2trash
 - sendmail
-- fetch-arxiv (todo)
+- fetch-arxiv
+- pychat
