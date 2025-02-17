@@ -15,6 +15,7 @@
 ### 可选用法
 
 - 可以使用 `-m` 或 `--message` 指定邮件正文。
+- 可以使用 `-a` 或 `--attach` 指定一个附件的路径，对于多个附件需要多次使用 `-a <file>`。
 - 通过 `<` 或 `|` 管道输入文件内容作为邮件正文。
 
 ### 示例
@@ -38,6 +39,11 @@
 - **通过 `-m` 选项指定邮件正文**：
     ```bash
     python3 sendmail.py -s "subject" -m "content" receiver@example.com
+    ```
+
+- **通过 `-a` 选项指定邮件附件**：
+    ```bash
+    python3 sendmail.py -s "subject" -m "content" -a attachment.pdf receiver@example.com
     ```
 
 ## 配置文件
@@ -66,5 +72,5 @@
 
 可以通过 `--config` 选项指定配置文件路径，例如：
 ```bash
-python3 sendmail.py -s "subject" -m "content" receiver@example.com --config /path/to/config.json
+python3 sendmail.py -s "subject" -m "content" receiver@example.com --config ${HOME}/.config/mail-config.json
 ```
