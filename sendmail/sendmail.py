@@ -117,7 +117,7 @@ def main():
         port,
         mail_user,
         mail_pass,
-        args.attachment,
+        args.attach,
     )
 
 
