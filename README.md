@@ -11,3 +11,4 @@
 - sendmail
 - fetch-arxiv
 - pychat
+- plagiarism-detector
