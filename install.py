@@ -4,7 +4,6 @@ import os
 import shutil
 import argparse
 
-
 EXCLUDES = {
     "generate_ps1_launchers.py",
     "install.py",
@@ -24,12 +23,13 @@ def find_py_files(root_dir, exclude_dir):
     return py_files
 
 
-def copy_files(py_files, install_dir, force_overwrite):
+def copy_files(py_files, install_dir, force_overwrite, keep_ext):
     os.makedirs(install_dir, exist_ok=True)
     seen = set()
 
     for src_path in py_files:
-        filename = os.path.basename(src_path)
+        base_name = os.path.splitext(os.path.basename(src_path))[0]
+        filename = base_name + ".py" if keep_ext else base_name
         dest_path = os.path.join(install_dir, filename)
 
         if filename in seen and not force_overwrite:
@@ -64,10 +64,16 @@ def main():
     parser.add_argument(
         "-f", "--force", action="store_true", help="Overwrite files with the same name"
     )
+    parser.add_argument(
+        "--keep-ext",
+        action="store_true",
+        default=(os.name == "nt"),
+        help="Keep .py extension in copied filenames (default: True on Windows, False on Unix)",
+    )
     args = parser.parse_args()
 
     py_files = find_py_files(args.source_dir, exclude_dir=args.install_dir)
-    copy_files(py_files, args.install_dir, args.force)
+    copy_files(py_files, args.install_dir, args.force, args.keep_ext)
 
 
 if __name__ == "__main__":
