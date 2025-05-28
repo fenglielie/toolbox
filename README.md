@@ -1,7 +1,5 @@
 # README
 
-A set of Python scripts:
-
 - auto-latexmk
 - ftp-upload
 - latex-check
@@ -12,3 +10,4 @@ A set of Python scripts:
 - fetch-arxiv
 - pychat
 - plagiarism-detector
+- pdfmeta
