@@ -44,7 +44,7 @@ def login_and_fetch_html(username: str, password: str) -> str:
     :return: HTML response as a decoded string
     """
     url = "http://wlt.ustc.edu.cn/cgi-bin/ip"
-    post_data = f"cmd=set&name={username}&password={password}&type=9&exp=0"
+    post_data = f"cmd=set&name={username}&password={password}&type=0&exp=0"
 
     try:
         result = subprocess.run(
@@ -105,4 +105,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
