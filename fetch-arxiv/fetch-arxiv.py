@@ -253,12 +253,10 @@ def main():
 
         download_pdfs(papers, args.download, args.dir, args.verbose)
 
-        # 生成邮件正文
         email_body = generate_email_body(
             args.search_query, args.sort_by, args.sort_order, papers
         )
 
-        # 保存邮件正文到文件
         with open(args.email, "w", encoding="utf-8") as f:
             f.write(email_body)
 

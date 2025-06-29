@@ -75,15 +75,14 @@ def check_dollar_sign_spacing(file_path):
 
 
 def fix_dollar_sign_spacing(file_path, lines, errors):
-    modified_lines = lines.copy()  # 复制原始行以便后续修改
+    modified_lines = lines.copy()
 
     for line_number, line in enumerate(lines):
         for error in errors:
-            if error[1] == line_number + 1:  # 对应的行
+            if error[1] == line_number + 1:
                 cur_idx = error[0]
                 is_even_idx = "before" in error[3]
 
-                # 根据索引进行修改
                 if is_even_idx:  # Even index (left dollar sign)
                     modified_lines[line_number] = (
                         modified_lines[line_number][:cur_idx]
@@ -97,7 +96,6 @@ def fix_dollar_sign_spacing(file_path, lines, errors):
                         + modified_lines[line_number][cur_idx + 1 :]
                     )
 
-    # 交互式确认更新
     confirm = input(f"Confirm changes for {file_path}? (y/n): ")
     if confirm.lower() == "y":
         with open(file_path, "w", encoding="utf-8", newline="\n") as file:

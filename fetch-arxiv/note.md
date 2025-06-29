@@ -1,4 +1,4 @@
-usage
+## usage
 
 ```bash
 fetch-arxiv "(ti:DEIM OR ti:POD) AND (cat:math.NA)" -n 10 --download=0

@@ -28,10 +28,8 @@ def send_email(
     message["To"] = receiver
     message["Subject"] = Header(subject, "utf-8")  # type: ignore
 
-    # 添加邮件正文
     message.attach(MIMEText(body, "plain", "utf-8"))
 
-    # 添加附件
     if attachment_paths:
         for attachment_path in attachment_paths:
             if os.path.isfile(attachment_path):
